@@ -11,10 +11,9 @@ class BarcodeController extends Controller
 {
     public function actionProcessImages()
     {
-        $directory = '/var/www/html/samir/yii/basic/barcode_images';
-        $processedDir = $directory . '/processed';
-        // dd($directory);
-        FileHelper::createDirectory($processedDir);
+        $directory = '/var/www/html/samir/yii/basic/uploads/barcode_images';
+        // $processedDir = $directory . '/processed';
+        // FileHelper::createDirectory($processedDir);
 
         $files = glob($directory . '/*.{jpg,jpeg,png}', GLOB_BRACE);
 
@@ -25,7 +24,7 @@ class BarcodeController extends Controller
 
         foreach ($files as $file) {
             $filename = basename($file);
-            $storagePath = Yii::getAlias('@app/runtime/uploads/' . $filename);
+            $storagePath = Yii::getAlias('@app/uploads/' . $filename);
             FileHelper::createDirectory(dirname($storagePath));
             copy($file, $storagePath);
 
@@ -34,23 +33,23 @@ class BarcodeController extends Controller
 
             if ($output === 'false' || empty($output)) {
                 // Barcode not found → move to lostnfound
-                $lostPath = Yii::getAlias('@app/runtime/lostnfound/' . $filename);
+                $lostPath = Yii::getAlias('@app/uploads/lostnfound/' . $filename);
                 FileHelper::createDirectory(dirname($lostPath));
                 copy($file, $lostPath);
-                unlink($storagePath);
-                rename($file, $processedDir . '/' . $filename);
+                // unlink($storagePath);
+                // rename($file, $processedDir . '/' . $filename);
 
                 $this->stderr("❌ Barcode not found. Moved to lostnfound: $filename\n", Console::FG_RED);
                 continue;
             }
 
             // Barcode found → move to barcode folder
-            $barcodeFolder = Yii::getAlias('@app/runtime/barcodes/' . $output);
+            $barcodeFolder = Yii::getAlias('@app/uploads/barcodes/' . $output);
             FileHelper::createDirectory($barcodeFolder);
             $finalPath = $barcodeFolder . '/' . $filename;
             copy($file, $finalPath);
-            unlink($storagePath);
-            rename($file, $processedDir . '/' . $filename);
+            // unlink($storagePath);
+            // rename($file, $processedDir . '/' . $filename);
 
             $this->stdout("✅ Scanned [$output] → saved to $finalPath\n", Console::FG_GREEN);
         }
